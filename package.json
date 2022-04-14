@@ -1,6 +1,6 @@
 {
   "name": "orbiter-sdk",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "",
   "keywords": [],
   "main": "dist/orbiter-sdk.umd.js",
@@ -23,6 +23,7 @@
     "prebuild": "rimraf dist",
     "build": "tsc --module commonjs && rollup -c rollup.config.ts && typedoc --out docs --theme default src/orbiter-sdk.ts",
     "start": "rollup -c rollup.config.ts -w",
+    "publish": "npm run build && npm publish",
     "test": "jest --coverage",
     "test:watch": "jest --coverage --watch",
     "test:prod": "npm run lint && npm run test -- --no-cache",
