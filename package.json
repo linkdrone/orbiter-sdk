@@ -12,11 +12,11 @@
   "author": "linkdrone <fengwanqing2014@gmail.com>",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/linkdrone/orbiter-sdk.git"
   },
   "license": "MIT",
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=14.0.0"
   },
   "scripts": {
     "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",

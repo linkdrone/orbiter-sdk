@@ -1,14 +1,14 @@
-import DummyClass from "../src/orbiter-sdk"
+import { OrbiterSdk } from '../src/orbiter-sdk'
 
 /**
- * Dummy test
+ * OrbiterSdk test
  */
-describe("Dummy test", () => {
-  it("works if true is truthy", () => {
+describe('OrbiterSdk test', () => {
+  it('works if true is truthy', () => {
     expect(true).toBeTruthy()
   })
 
-  it("DummyClass is instantiable", () => {
-    expect(new DummyClass()).toBeInstanceOf(DummyClass)
+  it('OrbiterSdk is instantiable', () => {
+    expect(new OrbiterSdk()).toBeInstanceOf(OrbiterSdk)
   })
 })
