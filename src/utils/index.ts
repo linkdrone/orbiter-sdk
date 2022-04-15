@@ -1,4 +1,6 @@
 import dayjs from 'dayjs'
+import { providers, utils } from 'ethers'
+import config from '../config'
 
 /**
  * @param ms
@@ -51,4 +53,60 @@ export function equalsIgnoreCase(value1: string, value2: string): boolean {
  */
 export function isEthTokenAddress(tokenAddress: string) {
   return /^0x0+$/i.test(tokenAddress)
+}
+
+/**
+ * @param networkId MetaMask's networkId
+ * @returns
+ */
+export function getChainInfo(networkId: number | string) {
+  const chainInfo = config.chains.find((chain) => chain.chainId.toString() === String(networkId))
+  return chainInfo
+}
+
+/**
+ * @param chainId Orbiter's chainId
+ * @param ethereum window.ethereum
+ */
+export async function ensureMetamaskNetwork(chainId: number, ethereum: any) {
+  if (!ethereum) {
+    throw new Error('Please install MetaMask or other wallets that support web3 first!')
+  }
+
+  const chain = getChainInfo(config.orbiterChainIdToNetworkId[chainId])
+  if (!chain) {
+    throw new Error(`Orbiter not support this chain: ${chainId}`)
+  }
+
+  const switchParams = {
+    chainId: utils.hexlify(chain.chainId),
+  }
+  try {
+    await ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [switchParams],
+    })
+  } catch (error: any) {
+    if (error.code === 4902) {
+      // Add network
+      const params = {
+        ...switchParams,
+        chainName: chain.name,
+        nativeCurrency: {
+          name: chain.nativeCurrency.name,
+          symbol: chain.nativeCurrency.symbol, // 2-6 characters long
+          decimals: chain.nativeCurrency.decimals,
+        },
+        rpcUrls: chain.rpc,
+        blockExplorerUrls: [chain.explorers[0]?.['url'] || chain.infoURL],
+      }
+
+      await ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [params],
+      })
+    } else {
+      throw error
+    }
+  }
 }

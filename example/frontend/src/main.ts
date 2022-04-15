@@ -2,10 +2,10 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 
-import { Transaction } from '../../../src/transaction'
+import { Transaction, ZksyncTransaction } from '../../../src/transaction'
 
 setTimeout(() => {
-  const transaction = new Transaction()
+  const transaction = new ZksyncTransaction(1, <any>1)
   console.warn('transaction: ', transaction)
 }, 2000)
 
