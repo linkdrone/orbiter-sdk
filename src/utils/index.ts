@@ -79,8 +79,9 @@ export async function ensureMetamaskNetwork(chainId: number, ethereum: any) {
   }
 
   const switchParams = {
-    chainId: utils.hexlify(chain.chainId),
+    chainId: utils.hexStripZeros(utils.hexlify(chain.chainId)),
   }
+
   try {
     await ethereum.request({
       method: 'wallet_switchEthereumChain',
