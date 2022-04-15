@@ -1,16 +1,14 @@
-import { Provider } from '@ethersproject/abstract-provider'
-import ethers, { Signer } from 'ethers'
-import zksync from 'zksync'
-import { Transaction, TransactionTransferOptions } from '.'
+import * as zksync from 'zksync'
+import { Transaction, TransactionTransferOptions } from './transaction'
 import { ChainValidator, ChainValidatorTypes } from '../utils/validator'
 
-export class ZksyncTransaction extends Transaction {
+export class TransactionZksync extends Transaction {
   /**
    * @param options
    */
   public async transfer(options: TransactionTransferOptions) {
     const zksyncProvider =
-      ChainValidator.arbitrum(this.chainId) == ChainValidatorTypes.MAINNET
+      ChainValidator.zksync(this.chainId) == ChainValidatorTypes.Mainnet
         ? await zksync.getDefaultProvider('mainnet')
         : await zksync.getDefaultProvider('rinkeby')
     const zksyncWallet = await zksync.Wallet.fromEthSigner(this.signer, zksyncProvider)
