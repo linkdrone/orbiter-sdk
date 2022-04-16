@@ -1,31 +1,45 @@
-import { ethers, utils } from 'ethers'
+import { BigNumberish, ethers, providers, utils } from 'ethers'
 import abis from '../config/abis'
 import { isEthTokenAddress } from '../utils'
 import { Transaction, TransactionTransferOptions } from './transaction'
 
 export class TransactionEvm extends Transaction {
   /**
+   * @param estimator
+   * @param defaultGasLimit
+   * @returns
+   */
+  private async getTransferGasLimit(
+    estimator: () => Promise<ethers.BigNumber>,
+    defaultGasLimit: BigNumberish = 55000
+  ) {
+    let gasLimit = ethers.BigNumber.from(defaultGasLimit)
+    try {
+      gasLimit = await estimator()
+    } catch (err) {
+      console.error('getTransferGasLimit error: ', err)
+    }
+    return gasLimit
+  }
+
+  /**
    * @param options
    */
-  public async transfer(options: TransactionTransferOptions) {
-    const accountAddress = await this.signer.getAddress()
+  public async transfer(options: TransactionTransferOptions & { defaultGasLimit?: BigNumberish }) {
     const amountHex = utils.hexlify(options.amount)
 
     if (isEthTokenAddress(options.tokenAddress)) {
       // When tokenAddress is eth
-
-      // const gasLimit = await getTransferGasLimit(
-      //   fromChainID,
-      //   selectMakerInfo,
-      //   from,
-      //   selectMakerInfo.makerAddress,
-      //   value
-      // )
-      const gasLimit = 100
-
-      return await this.signer.sendTransaction({
+      const params = {
         to: options.toAddress,
         value: amountHex,
+      }
+      const gasLimit = await this.getTransferGasLimit(() => {
+        return this.signer.estimateGas(params)
+      }, options.defaultGasLimit)
+
+      return await this.signer.sendTransaction({
+        ...params,
         gasLimit: gasLimit,
       })
     } else {
@@ -35,14 +49,9 @@ export class TransactionEvm extends Transaction {
         throw new Error('Failed to obtain contract information, please refresh and try again')
       }
 
-      // const gasLimit = await getTransferGasLimit(
-      //   fromChainID,
-      //   selectMakerInfo,
-      //   account,
-      //   to,
-      //   tValue.tAmount
-      // )
-      const gasLimit = 10086
+      const gasLimit = await this.getTransferGasLimit(() => {
+        return contract.estimateGas.transfer(options.toAddress, amountHex)
+      }, options.defaultGasLimit)
 
       return await contract.transfer(options.toAddress, amountHex, {
         gasLimit: gasLimit,
