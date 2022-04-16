@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { providers, utils } from 'ethers'
+import { utils } from 'ethers'
 import config from '../config'
 
 /**

@@ -11,6 +11,7 @@ export class ChainValidator {
     if (chainId == 5) {
       return ChainValidatorTypes.Testnet
     }
+    return undefined
   }
 
   static arbitrum(chainId: number) {
@@ -20,6 +21,7 @@ export class ChainValidator {
     if (chainId == 22) {
       return ChainValidatorTypes.Testnet
     }
+    return undefined
   }
 
   static zksync(chainId: number) {
@@ -29,6 +31,7 @@ export class ChainValidator {
     if (chainId == 33) {
       return ChainValidatorTypes.Testnet
     }
+    return undefined
   }
 
   static starknet(chainId: number) {
@@ -38,6 +41,7 @@ export class ChainValidator {
     if (chainId == 33) {
       return ChainValidatorTypes.Testnet
     }
+    return undefined
   }
 
   static polygon(chainId: number) {
@@ -47,6 +51,7 @@ export class ChainValidator {
     if (chainId == 66) {
       return ChainValidatorTypes.Testnet
     }
+    return undefined
   }
 
   static optimism(chainId: number) {
@@ -56,6 +61,7 @@ export class ChainValidator {
     if (chainId == 77) {
       return ChainValidatorTypes.Testnet
     }
+    return undefined
   }
 
   static immutablex(chainId: number) {
@@ -65,6 +71,7 @@ export class ChainValidator {
     if (chainId == 88) {
       return ChainValidatorTypes.Testnet
     }
+    return undefined
   }
 
   static loopring(chainId: number) {
@@ -74,6 +81,7 @@ export class ChainValidator {
     if (chainId == 99) {
       return ChainValidatorTypes.Testnet
     }
+    return undefined
   }
 
   static metis(chainId: number) {
@@ -83,6 +91,7 @@ export class ChainValidator {
     if (chainId == 510) {
       return ChainValidatorTypes.Testnet
     }
+    return undefined
   }
 
   static dydx(chainId: number) {
@@ -92,5 +101,6 @@ export class ChainValidator {
     if (chainId == 511) {
       return ChainValidatorTypes.Testnet
     }
+    return undefined
   }
 }
