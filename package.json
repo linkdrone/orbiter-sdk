@@ -1,10 +1,11 @@
 {
   "name": "orbiter-sdk",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "",
   "keywords": [],
   "main": "dist/orbiter-sdk.umd.js",
   "module": "dist/orbiter-sdk.es5.js",
+  "browser": "dist/lib/orbiter-sdk.js",
   "typings": "dist/types/orbiter-sdk.d.ts",
   "files": [
     "dist"
