@@ -99,6 +99,6 @@ export class TransactionZksync extends Transaction {
       })
     }
 
-    return transaction ? await transaction.awaitReceipt() : undefined
+    return transaction
   }
 }

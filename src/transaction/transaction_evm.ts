@@ -26,7 +26,7 @@ export class TransactionEvm extends Transaction {
    * @param options
    */
   public async transfer(options: TransactionTransferOptions & { defaultGasLimit?: BigNumberish }) {
-    const amountHex = utils.hexlify(options.amount)
+    const amountHex = ethers.BigNumber.from(options.amount).toHexString()
 
     if (isEthTokenAddress(options.tokenAddress)) {
       // When tokenAddress is eth

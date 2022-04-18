@@ -15,6 +15,9 @@
     <p>
       <button @click="onTransferLoopring">TransferLoopring</button>
     </p>
+    <!-- <p>
+      <button @click="onTransferDydx">TransferDydx</button>
+    </p> -->
   </div>
 </template>
 
@@ -27,6 +30,7 @@ import {
   TransactionImmutablex,
   TransactionEvm,
   TransactionLoopring,
+  // TransactionDydx,
 } from '../../../../src/transaction'
 
 const ethereum = (window as any).ethereum
@@ -99,4 +103,22 @@ const onTransferLoopring = async () => {
   })
   console.warn('onTransferLoopring >>> ', tr)
 }
+// const onTransferDydx = async () => {
+//   const chainId = 511
+
+//   await utils.ensureMetamaskNetwork(chainId, ethereum)
+
+//   const web3 = new Web3(ethereum)
+
+//   const transactionEvm = new TransactionDydx(chainId, web3)
+//   const tr = await transactionEvm.transfer({
+//     amount: usdcAmount,
+//     fromAddress: await web3.eth.getCoinbase(),
+//     tokenAddress: '0xeb8f08a975ab53e34d8a0330e0d34de942c95926',
+//     toAddress: '0x694434EC84b7A8Ad8eFc57327ddD0A428e23f8D5',
+//     receiverPublicKey: '04e69175389829db733f41ae75e7ba59ea2b2849690c734fcd291c94d6ec6017',
+//     receiverPositionId: '60620',
+//   })
+//   console.warn('onTransferDydx >>> ', tr)
+// }
 </script>
