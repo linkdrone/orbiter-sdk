@@ -36,9 +36,7 @@ export class TransactionDydx extends Transaction {
 
     const params = {
       clientId: dydxHelper.generateClientId(options.clientIdAddress),
-      amount: ethers.BigNumber.from(options.amount)
-        .div(10 ** 6)
-        .toString(), // Only usdc now!
+      amount: ethers.BigNumber.from(options.amount).toNumber() / 10 ** 6 + '', // Only usdc now!
       expiration: new Date(new Date().getTime() + 86400000 * 30).toISOString(),
       receiverAccountId: dydxHelper.getAccountId(options.toAddress),
       receiverPublicKey: options.receiverPublicKey,
