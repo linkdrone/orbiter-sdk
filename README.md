@@ -20,7 +20,7 @@ npm install orbiter-sdk --save
 
 #### TransactionZksync
 
-```TyepScript
+```TypeScript
 const chainId = 33
 await utils.ensureMetamaskNetwork(chainId, ethereum)
 
@@ -35,7 +35,7 @@ await transactionZksync.transfer({
 
 #### TransactionImmutablex
 
-```TyepScript
+```TypeScript
 const chainId = 88
 await utils.ensureMetamaskNetwork(chainId, ethereum)
 
@@ -52,7 +52,7 @@ const tr = await transactionImmutablex.transfer({
 
 #### TransactionEvm
 
-```TyepScript
+```TypeScript
 const chainId = 5
 await utils.ensureMetamaskNetwork(chainId, ethereum)
 
@@ -68,7 +68,7 @@ const tr = await transactionEvm.transfer({
 
 #### TransactionLoopring
 
-```TyepScript
+```TypeScript
 const chainId = 99
 const web3 = new Web3(ethereum)
 
@@ -83,7 +83,7 @@ const tr = await transactionEvm.transfer({
 
 #### TransactionDydx
 
-```TyepScript
+```TypeScript
 const chainId = 511
 await utils.ensureMetamaskNetwork(chainId, ethereum)
 
@@ -102,6 +102,6 @@ const tr = await transactionEvm.transfer({
 
 #### Util
 
-```TyepScript
+```TypeScript
 
 ```
