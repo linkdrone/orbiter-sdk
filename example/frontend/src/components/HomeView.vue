@@ -1,23 +1,14 @@
 <template>
   <div class="home">
-    <p>
-      <button @click="onTransferZksync">TransferZksync</button>
-    </p>
-    <p>
-      <button @click="onTransferImmutablex">TransferImmutablex</button>
-    </p>
-    <p>
-      <button @click="onTransferEthereum">TransferEthereum</button>
-    </p>
-    <p>
-      <button @click="onTransferEthereumUsdc">TransferEthereumUsdc</button>
-    </p>
-    <p>
-      <button @click="onTransferLoopring">TransferLoopring</button>
-    </p>
-    <!-- <p>
-      <button @click="onTransferDydx">TransferDydx</button>
-    </p> -->
+    <el-button size="default" @click="onTransferZksync">TransferZksync</el-button>
+    <el-button size="default" @click="onTransferImmutablex">TransferImmutablex</el-button>
+    <el-button size="default" @click="onTransferEthereum">TransferEthereum</el-button>
+    <el-button size="default" @click="onTransferEthereumUsdc">TransferEthereumUsdc</el-button>
+    <br />
+    <el-button size="default" @click="onTransferPolygon">TransferPolygon</el-button>
+    <el-button size="default" @click="onTransferArbitum">TransferArbitum</el-button>
+    <el-button size="default" @click="onTransferLoopring">TransferLoopring</el-button>
+    <el-button size="default" @click="onTransferDydx">TransferDydx</el-button>
   </div>
 </template>
 
@@ -30,7 +21,7 @@ import {
   TransactionImmutablex,
   TransactionEvm,
   TransactionLoopring,
-  // TransactionDydx,
+  TransactionDydx,
 } from '../../../../src/transaction'
 
 const ethereum = (window as any).ethereum
@@ -76,6 +67,37 @@ const onTransferEthereum = async () => {
   })
   console.warn('onTransferEthereum >>> ', tr)
 }
+
+const onTransferPolygon = async () => {
+  const chainId = 66
+  await utils.ensureMetamaskNetwork(chainId, ethereum)
+
+  const provider = new providers.Web3Provider(ethereum)
+
+  const transactionEvm = new TransactionEvm(chainId, provider.getSigner())
+  const tr = await transactionEvm.transfer({
+    amount: ethAmount,
+    tokenAddress: '0x0000000000000000000000000000000000000000',
+    toAddress: '0xF2BE509057855b055f0515CCD0223BEf84D19ad4',
+  })
+  console.warn('onTransferPolygon >>> ', tr)
+}
+
+const onTransferArbitum = async () => {
+  const chainId = 22
+  await utils.ensureMetamaskNetwork(chainId, ethereum)
+
+  const provider = new providers.Web3Provider(ethereum)
+
+  const transactionEvm = new TransactionEvm(chainId, provider.getSigner())
+  const tr = await transactionEvm.transfer({
+    amount: ethAmount,
+    tokenAddress: '0x0000000000000000000000000000000000000000',
+    toAddress: '0xF2BE509057855b055f0515CCD0223BEf84D19ad4',
+  })
+  console.warn('onTransferArbitum >>> ', tr)
+}
+
 const onTransferEthereumUsdc = async () => {
   const chainId = 5
   await utils.ensureMetamaskNetwork(chainId, ethereum)
@@ -103,22 +125,25 @@ const onTransferLoopring = async () => {
   })
   console.warn('onTransferLoopring >>> ', tr)
 }
-// const onTransferDydx = async () => {
-//   const chainId = 511
-
-//   await utils.ensureMetamaskNetwork(chainId, ethereum)
-
-//   const web3 = new Web3(ethereum)
-
-//   const transactionEvm = new TransactionDydx(chainId, web3)
-//   const tr = await transactionEvm.transfer({
-//     amount: usdcAmount,
-//     fromAddress: await web3.eth.getCoinbase(),
-//     tokenAddress: '0xeb8f08a975ab53e34d8a0330e0d34de942c95926',
-//     toAddress: '0x694434EC84b7A8Ad8eFc57327ddD0A428e23f8D5',
-//     receiverPublicKey: '04e69175389829db733f41ae75e7ba59ea2b2849690c734fcd291c94d6ec6017',
-//     receiverPositionId: '60620',
-//   })
-//   console.warn('onTransferDydx >>> ', tr)
-// }
+const onTransferDydx = async () => {
+  const chainId = 511
+  await utils.ensureMetamaskNetwork(chainId, ethereum)
+  const web3 = new Web3(ethereum)
+  const transactionEvm = new TransactionDydx(chainId, web3)
+  const tr = await transactionEvm.transfer({
+    amount: usdcAmount,
+    fromAddress: await web3.eth.getCoinbase(),
+    tokenAddress: '0xeb8f08a975ab53e34d8a0330e0d34de942c95926',
+    toAddress: '0x694434EC84b7A8Ad8eFc57327ddD0A428e23f8D5',
+    receiverPublicKey: '04e69175389829db733f41ae75e7ba59ea2b2849690c734fcd291c94d6ec6017',
+    receiverPositionId: '60620',
+  })
+  console.warn('onTransferDydx >>> ', tr)
+}
 </script>
+
+<style>
+.el-button {
+  margin-top: 12px;
+}
+</style>

@@ -105,3 +105,9 @@ const tr = await transactionEvm.transfer({
 ```TypeScript
 
 ```
+
+### Features
+- [x] Transfer support
+- [ ] Get a list of supported chains
+- [ ] Get support to chains by from chain
+- [ ] Get real amount, gasFee, tradingFee, withholdingFee
