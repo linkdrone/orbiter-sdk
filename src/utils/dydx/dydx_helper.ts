@@ -6,7 +6,6 @@ import {
   TransferResponseObject,
 } from '@dydxprotocol/v3-client'
 import { getAccountId } from '@dydxprotocol/v3-client/build/src/lib/db'
-import BigNumber from 'bignumber.js'
 import { ethers, utils } from 'ethers'
 import Web3 from 'web3'
 import { equalsIgnoreCase } from '..'
@@ -288,8 +287,8 @@ export class DydxHelper {
       transactionIndex: 0,
       from: '',
       to: '',
-      value: new BigNumber(isTransferIn ? transfer.creditAmount : transfer.debitAmount)
-        .multipliedBy(10 ** 6)
+      value: ethers.utils
+        .parseUnits(isTransferIn ? transfer.creditAmount : transfer.debitAmount, 6)
         .toString(), // Only usdc
       txreceipt_status: transfer.status,
       contractAddress: '', // Only usdc

@@ -1,252 +1,227 @@
 <template>
   <div class="home">
-    <el-select v-model="state.tokenAddress" class="m-2" placeholder="Select" size="large">
+    <el-select v-model="state.tokenAddress" placeholder="Select" size="large">
       <el-option
         v-for="item in state.tokens"
-        :key="item.tokenAddress"
-        :label="item.tokenName"
-        :value="item.tokenAddress"
+        :key="item.address"
+        :label="item.name"
+        :value="item.address"
       />
     </el-select>
-    <el-select v-model="state.fromChainId" class="m-2" placeholder="Select" size="large">
+    <el-select v-model="state.fromChainId" placeholder="Select" size="large">
       <el-option
         v-for="item in state.fromChains"
-        :key="item.chainId"
-        :label="item.chainName"
-        :value="item.chainId"
+        :key="item.id"
+        :label="item.name"
+        :value="item.id"
       />
     </el-select>
-    <el-select v-model="state.toChainId" class="m-2" placeholder="Select" size="large">
+    <el-select v-model="state.toChainId" placeholder="Select" size="large">
       <el-option
         v-for="item in state.toChains"
-        :key="item.chainId"
-        :label="item.chainName"
-        :value="item.chainId"
+        :key="item.id"
+        :label="item.name"
+        :value="item.id"
       />
     </el-select>
-    <br /><br />
-    <el-input
-      size="large"
-      v-model="state.amount"
-      placeholder="Please input amount."
-      style="width: 300px"
-    />
-    <br />
-    <el-button size="large" type="primary" @click="onConfirmTransfer">Confirm Transfer</el-button>
-
-    <!-- <br />
-    <el-button size="default" @click="onTransferZksync">TransferZksync</el-button>
-    <el-button size="default" @click="onTransferImmutablex">TransferImmutablex</el-button>
-    <el-button size="default" @click="onTransferEthereum">TransferEthereum</el-button>
-    <el-button size="default" @click="onTransferEthereumUsdc">TransferEthereumUsdc</el-button>
-    <br />
-    <el-button size="default" @click="onTransferPolygon">TransferPolygon</el-button>
-    <el-button size="default" @click="onTransferArbitum">TransferArbitum</el-button>
-    <el-button size="default" @click="onTransferLoopring">TransferLoopring</el-button>
-    <el-button size="default" @click="onTransferDydx">TransferDydx</el-button> -->
+    <div class="home-item">
+      <el-input
+        size="large"
+        v-model="state.amount"
+        placeholder="Please input amount."
+        style="width: 300px"
+      />
+    </div>
+    <div v-if="state.amountsError" class="home-item amounts-error">{{ state.amountsError }}</div>
+    <div v-if="state.amounts" class="home-item amounts">
+      <div>
+        payAmount: <span>{{ state.amounts.payAmountHm }}</span>
+      </div>
+      <div>
+        receiveAmount: <span>{{ state.amounts.receiveAmountHm }}</span>
+      </div>
+    </div>
+    <el-button size="large" type="primary" @click="onConfirmTransfer" class="home-item">
+      Confirm Transfer
+    </el-button>
+    <el-collapse
+      class="home-item"
+      v-if="state.transferList.length > 0"
+      v-model="state.collapseActive"
+    >
+      <el-collapse-item
+        v-for="(item, index) in state.transferList"
+        :title="`token: ${item.token.name}, fromChain: ${item.fromChain.name}, toChain: ${item.toChain.name}, amount: ${item.amount}`"
+        :name="index"
+      >
+        <div class="transfer-list__result">
+          {{ JSON.stringify(item.result) }}
+        </div>
+      </el-collapse-item>
+    </el-collapse>
   </div>
 </template>
 
 <script lang="ts">
-import { ethers, providers } from 'ethers'
-import { reactive } from 'vue'
-import Web3 from 'web3'
-import { utils, Bridge } from '../../../../src/orbiter-sdk'
-import {
-  TransactionDydx,
-  TransactionEvm,
-  TransactionImmutablex,
-  TransactionLoopring,
-  TransactionZksync,
-} from '../../../../src/transaction'
+import { ethers } from 'ethers'
+import { computed, reactive, watch } from 'vue'
+import { Bridge, BridgeChain, BridgeToken } from '../../../../src/orbiter-sdk'
+import { equalsIgnoreCase } from '../../../../src/utils'
 </script>
 
 <script setup lang="ts">
 const state = reactive({
-  tokenAddress: '0x0000000000000000000000000000000000000000',
-  tokens: [
-    {
-      tokenAddress: '0x0000000000000000000000000000000000000000',
-      tokenName: 'ETH',
-    },
-    {
-      tokenAddress: '0xeb8f08a975ab53e34d8a0330e0d34de942c95926',
-      tokenName: 'USDC',
-    },
-  ],
+  tokens: [] as BridgeToken[],
+  fromChains: [] as BridgeChain[],
+  toChains: [] as BridgeChain[],
 
-  fromChainId: 5,
-  fromChains: [
-    {
-      chainId: 5,
-      chainName: 'Ethereum(R)',
-    },
-    {
-      chainId: 22,
-      chainName: 'Arbitum',
-    },
-  ],
-
-  toChainId: 22,
-  toChains: [
-    {
-      chainId: 22,
-      chainName: 'Arbitum',
-    },
-  ],
+  tokenAddress: '',
+  fromChainId: undefined as undefined | number,
+  toChainId: undefined as undefined | number,
 
   amount: '',
+
+  amounts: undefined as
+    | undefined
+    | { payAmount: ethers.BigNumber; payAmountHm: string; receiveAmountHm: string },
+  amountsError: '',
+
+  transferList: [] as {
+    token: BridgeToken
+    fromChain: BridgeChain
+    toChain: BridgeChain
+    amount: string
+    result: any
+  }[],
+  collapseActive: 0,
 })
 
+// computeds
+const currentToken = computed(() =>
+  state.tokens.find((item) => equalsIgnoreCase(item.address, state.tokenAddress))
+)
+const currentFromChain = computed(() =>
+  state.fromChains.find((item) => item.id == state.fromChainId)
+)
+const currentToChain = computed(() => state.toChains.find((item) => item.id == state.toChainId))
+
+// methods
+const bridge = new Bridge('Testnet')
+const refreshBridgeFilter = async () => {
+  const filter = await bridge.filter(currentFromChain.value, currentToChain.value)
+
+  state.fromChains = filter.fromChains
+  state.toChains = filter.toChains
+  state.fromChainId = state.fromChains.find(
+    (item, index) => (!currentFromChain.value && index == 0) || currentFromChain.value.id == item.id
+  )?.id
+  state.toChainId = state.toChains.find(
+    (item, index) => (!currentToChain.value && index == 0) || currentToChain.value.id == item.id
+  )?.id
+
+  // Token deduplicate
+  state.tokens = filter.tokens
+    .map((item) => {
+      if (state.fromChainId == item.chainId) {
+        return item
+      }
+      return undefined
+    })
+    .filter((item) => item !== undefined)
+  state.tokenAddress = state.tokens.find(
+    (item, index) =>
+      (!currentToken.value && index == 0) || currentToken.value.address == item.address
+  )?.address
+}
+refreshBridgeFilter()
+
+const getAmounts = async () => {
+  if (!state.amount) {
+    return
+  }
+
+  try {
+    state.amounts = await bridge.getAmounts(
+      currentToken.value,
+      currentFromChain.value,
+      currentToChain.value,
+      state.amount
+    )
+    state.amountsError = ''
+  } catch (err) {
+    state.amounts = undefined
+    state.amountsError = err.message
+  }
+}
+
 const ethereum = (window as any).ethereum
-
-const ethAmount = ethers.BigNumber.from(10).pow(16)
-const usdcAmount = ethers.BigNumber.from(10).pow(6)
-
 const onConfirmTransfer = async () => {
-  const bridge = new Bridge('Testnet')
-  console.warn('bridge.makerList >>> ', await bridge.getMakerList());
-  
-
-  const chainId = 5
-  await utils.ensureMetamaskNetwork(chainId, ethereum)
-
-  const provider = new providers.Web3Provider(ethereum)
-
-  const transactionEvm = new TransactionEvm(chainId, provider.getSigner())
-  // const tr = await transactionEvm.transfer({
-  //   amount: ethers.utils.parseUnits(state.amount, 18),
-  //   tokenAddress: '0x0000000000000000000000000000000000000000',
-  //   toAddress: '0xF2BE509057855b055f0515CCD0223BEf84D19ad4',
-  // })
-  const tr = await transactionEvm.transfer({
-    amount: ethers.utils.parseUnits(state.amount, 6),
-    tokenAddress: '0xeb8f08a975ab53e34d8a0330e0d34de942c95926',
-    toAddress: '0xF2BE509057855b055f0515CCD0223BEf84D19ad4',
+  const result = await bridge.transfer(
+    ethereum,
+    currentToken.value,
+    currentFromChain.value,
+    currentToChain.value,
+    state.amount
+  )
+  state.transferList.unshift({
+    token: currentToken.value,
+    fromChain: currentFromChain.value,
+    toChain: currentToChain.value,
+    amount: state.amount,
+    result,
   })
-  console.warn('onConfirmTransfer >>> ', tr)
 }
 
-const onTransferZksync = async () => {
-  const provider = new providers.Web3Provider(ethereum)
-  const transactionZksync = new TransactionZksync(33, provider.getSigner())
-  const tr = await transactionZksync.transfer({
-    amount: usdcAmount,
-    tokenAddress: '0xeb8f08a975ab53e34d8a0330e0d34de942c95926',
-    toAddress: '0xF2BE509057855b055f0515CCD0223BEf84D19ad4',
-  })
-  console.warn('onTransferZksync >>> ', tr)
-}
-
-const onTransferImmutablex = async () => {
-  const provider = new providers.Web3Provider(ethereum)
-
-  const transactionImmutablex = new TransactionImmutablex(88, provider.getSigner())
-  const tr = await transactionImmutablex.transfer({
-    amount: ethAmount,
-    tokenAddress: '0x0000000000000000000000000000000000000000',
-    toAddress: '0xF2BE509057855b055f0515CCD0223BEf84D19ad4',
-    decimals: 18,
-  })
-  console.warn('onTransferImmutablex >>> ', tr)
-}
-
-const onTransferEthereum = async () => {
-  const chainId = 5
-  await utils.ensureMetamaskNetwork(chainId, ethereum)
-
-  const provider = new providers.Web3Provider(ethereum)
-
-  const transactionEvm = new TransactionEvm(chainId, provider.getSigner())
-  const tr = await transactionEvm.transfer({
-    amount: ethAmount,
-    tokenAddress: '0x0000000000000000000000000000000000000000',
-    toAddress: '0xF2BE509057855b055f0515CCD0223BEf84D19ad4',
-  })
-  console.warn('onTransferEthereum >>> ', tr)
-}
-
-const onTransferPolygon = async () => {
-  const chainId = 66
-  await utils.ensureMetamaskNetwork(chainId, ethereum)
-
-  const provider = new providers.Web3Provider(ethereum)
-
-  const transactionEvm = new TransactionEvm(chainId, provider.getSigner())
-  const tr = await transactionEvm.transfer({
-    amount: ethAmount,
-    tokenAddress: '0x0000000000000000000000000000000000000000',
-    toAddress: '0xF2BE509057855b055f0515CCD0223BEf84D19ad4',
-  })
-  console.warn('onTransferPolygon >>> ', tr)
-}
-
-const onTransferArbitum = async () => {
-  const chainId = 22
-  await utils.ensureMetamaskNetwork(chainId, ethereum)
-
-  const provider = new providers.Web3Provider(ethereum)
-
-  const transactionEvm = new TransactionEvm(chainId, provider.getSigner())
-  const tr = await transactionEvm.transfer({
-    amount: ethAmount,
-    tokenAddress: '0x0000000000000000000000000000000000000000',
-    toAddress: '0xF2BE509057855b055f0515CCD0223BEf84D19ad4',
-  })
-  console.warn('onTransferArbitum >>> ', tr)
-}
-
-const onTransferEthereumUsdc = async () => {
-  const chainId = 5
-  await utils.ensureMetamaskNetwork(chainId, ethereum)
-
-  const provider = new providers.Web3Provider(ethereum)
-
-  const transactionEvm = new TransactionEvm(chainId, provider.getSigner())
-  const tr = await transactionEvm.transfer({
-    amount: usdcAmount,
-    tokenAddress: '0xeb8f08a975ab53e34d8a0330e0d34de942c95926',
-    toAddress: '0xF2BE509057855b055f0515CCD0223BEf84D19ad4',
-  })
-  console.warn('onTransferEthereumUsdc >>> ', tr)
-}
-
-const onTransferLoopring = async () => {
-  const chainId = 99
-  const web3 = new Web3(ethereum)
-
-  const transactionEvm = new TransactionLoopring(chainId, web3)
-  const tr = await transactionEvm.transfer({
-    amount: ethAmount,
-    fromAddress: await web3.eth.getCoinbase(),
-    tokenAddress: '0x0000000000000000000000000000000000000000',
-    toAddress: '0xF2BE509057855b055f0515CCD0223BEf84D19ad4',
-  })
-  console.warn('onTransferLoopring >>> ', tr)
-}
-
-const onTransferDydx = async () => {
-  const chainId = 511
-  await utils.ensureMetamaskNetwork(chainId, ethereum)
-  const web3 = new Web3(ethereum)
-  const transactionEvm = new TransactionDydx(chainId, web3)
-  const tr = await transactionEvm.transfer({
-    amount: usdcAmount,
-    fromAddress: await web3.eth.getCoinbase(),
-    tokenAddress: '0xeb8f08a975ab53e34d8a0330e0d34de942c95926',
-    toAddress: '0x694434EC84b7A8Ad8eFc57327ddD0A428e23f8D5',
-    receiverPublicKey: '04e69175389829db733f41ae75e7ba59ea2b2849690c734fcd291c94d6ec6017',
-    receiverPositionId: '60620',
-  })
-  console.warn('onTransferDydx >>> ', tr)
-}
+// watchs
+watch(
+  () => [state.tokenAddress, state.fromChainId, state.toChainId],
+  () => {
+    refreshBridgeFilter()
+    getAmounts()
+  }
+)
+watch(
+  () => state.amount,
+  () => {
+    getAmounts()
+  }
+)
 </script>
 
 <style>
+.home {
+  width: 800px;
+  margin: 0 auto;
+}
 .el-select {
   margin-right: 12px;
 }
 .el-button {
   margin-top: 12px;
+}
+.home-item {
+  margin-top: 20px;
+}
+.amounts-error {
+  width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  color: var(--el-color-danger);
+  font-weight: bold;
+}
+.amounts {
+  font-weight: bold;
+  color: #666666;
+}
+.amounts span {
+  color: var(--el-color-success);
+}
+.transfer-list__result {
+  text-align: left;
+  line-height: 15px;
+  max-height: 200px;
+  padding: 10px;
+  overflow-y: scroll;
+  word-wrap: break-word;
 }
 </style>
