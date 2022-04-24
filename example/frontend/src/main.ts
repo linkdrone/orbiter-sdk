@@ -11,4 +11,4 @@ import 'prismjs/themes/prism-okaidia.css'
 
 const app = createApp(App)
 app.mount('#app')
-app.use(ElementPlus, { size: 'small', zIndex: 3000 })
+app.use(ElementPlus, {})

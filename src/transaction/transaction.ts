@@ -1,5 +1,6 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import ethers, { BigNumberish, Signer } from 'ethers'
+import { CrossAddressExt } from '../utils/cross_address'
 
 export type TransactionTransferOptions = {
   amount: ethers.BigNumberish
@@ -14,6 +15,8 @@ export type TransactionTransferOptions = {
   receiverPublicKey?: string // For dydx, docs: https://docs.dydx.exchange/#create-transfer
   receiverPositionId?: string // For dydx
   clientIdAddress?: string // For dydx, default is toAddress
+  
+  crossAddressExt?: CrossAddressExt // Cross address transfer data
 }
 
 export abstract class Transaction {

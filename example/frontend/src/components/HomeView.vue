@@ -41,7 +41,13 @@
         receiveAmount: <span>{{ state.amounts.receiveAmountHm }}</span>
       </div>
     </div>
-    <el-button size="large" type="primary" @click="onConfirmTransfer" class="home-item">
+    <el-button
+      :disabled="state.amountsError != ''"
+      size="large"
+      type="primary"
+      @click="onConfirmTransfer"
+      class="home-item"
+    >
       Confirm Transfer
     </el-button>
     <el-collapse
@@ -63,6 +69,7 @@
 </template>
 
 <script lang="ts">
+import { Web3Provider } from '@ethersproject/providers'
 import { ethers } from 'ethers'
 import { computed, reactive, watch } from 'vue'
 import { Bridge, BridgeChain, BridgeToken } from '../../../../src/orbiter-sdk'
@@ -107,11 +114,11 @@ const currentToChain = computed(() => state.toChains.find((item) => item.id == s
 
 // methods
 const bridge = new Bridge('Testnet')
-const refreshBridgeFilter = async () => {
-  const filter = await bridge.filter(currentFromChain.value, currentToChain.value)
+const refreshBridgeSupports = async () => {
+  const supports = await bridge.supports(currentFromChain.value, currentToChain.value)
 
-  state.fromChains = filter.fromChains
-  state.toChains = filter.toChains
+  state.fromChains = supports.fromChains
+  state.toChains = supports.toChains
   state.fromChainId = state.fromChains.find(
     (item, index) => (!currentFromChain.value && index == 0) || currentFromChain.value.id == item.id
   )?.id
@@ -120,7 +127,7 @@ const refreshBridgeFilter = async () => {
   )?.id
 
   // Token deduplicate
-  state.tokens = filter.tokens
+  state.tokens = supports.tokens
     .map((item) => {
       if (state.fromChainId == item.chainId) {
         return item
@@ -133,7 +140,7 @@ const refreshBridgeFilter = async () => {
       (!currentToken.value && index == 0) || currentToken.value.address == item.address
   )?.address
 }
-refreshBridgeFilter()
+refreshBridgeSupports()
 
 const getAmounts = async () => {
   if (!state.amount) {
@@ -156,27 +163,36 @@ const getAmounts = async () => {
 
 const ethereum = (window as any).ethereum
 const onConfirmTransfer = async () => {
-  const result = await bridge.transfer(
-    ethereum,
-    currentToken.value,
-    currentFromChain.value,
-    currentToChain.value,
-    state.amount
-  )
-  state.transferList.unshift({
-    token: currentToken.value,
-    fromChain: currentFromChain.value,
-    toChain: currentToChain.value,
-    amount: state.amount,
-    result,
-  })
+  try {
+    const result = await bridge.transfer(
+      new Web3Provider(ethereum).getSigner(),
+      currentToken.value,
+      currentFromChain.value,
+      currentToChain.value,
+      state.amount
+    )
+
+    state.transferList.unshift({
+      token: currentToken.value,
+      fromChain: currentFromChain.value,
+      toChain: currentToChain.value,
+      amount: state.amount,
+      result,
+    })
+  } catch (err) {
+    ElNotification({
+      title: 'Error',
+      message: `Fail: ${err.message}`,
+      type: 'error',
+    })
+  }
 }
 
 // watchs
 watch(
   () => [state.tokenAddress, state.fromChainId, state.toChainId],
   () => {
-    refreshBridgeFilter()
+    refreshBridgeSupports()
     getAmounts()
   }
 )
