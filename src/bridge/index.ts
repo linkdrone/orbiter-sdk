@@ -176,9 +176,10 @@ export class Bridge {
         }
 
         // Push fromChains.
-        // Warnning: dYdX cannot transfer out now!
+        // Warnning: starknet cannot transfer out now!, dYdX cannot transfer out now!
         if (
           (!toChain || toChain.id == makerInfo.toChainId) &&
+          ChainValidator.starknet(makerInfo.fromChainId) === undefined &&
           ChainValidator.dydx(makerInfo.fromChainId) === undefined
         ) {
           const findIndexFromChain = fromChains.findIndex(
@@ -194,7 +195,11 @@ export class Bridge {
         }
 
         // Push toChains
-        if (!fromChain || fromChain.id == makerInfo.fromChainId) {
+        // Warnning: starknet cannot transfer in now!
+        if (
+          (!fromChain || fromChain.id == makerInfo.fromChainId) &&
+          ChainValidator.starknet(makerInfo.toChainId) === undefined
+        ) {
           const findIndexToChain = toChains.findIndex((_chain) => _chain.id == makerInfo.toChainId)
           if (findIndexToChain === -1) {
             toChains.push({
