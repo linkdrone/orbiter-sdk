@@ -10,14 +10,10 @@
   "dependencies": {
     "@dydxprotocol/v3-client": "^1.8.2",
     "element-plus": "^2.1.10",
-    "ethers": "^5.6.4",
-    "prismjs": "^1.28.0",
-    "vue": "^3.2.25",
-    "web3": "^1.7.3"
+    "vue": "^3.2.25"
   },
   "devDependencies": {
     "@rollup/plugin-inject": "^4.0.4",
-    "@types/prismjs": "^1.26.0",
     "@vitejs/plugin-vue": "^2.3.1",
     "node-stdlib-browser": "^1.2.0",
     "typescript": "^4.5.4",
